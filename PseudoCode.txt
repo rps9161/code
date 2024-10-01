@@ -1,0 +1,108 @@
+# Comprehensive Pseudocode for Image Deblurring System
+
+# Main Execution (run_model.py)
+function main():
+    args = parse_arguments()
+    set_gpu_or_cpu_mode(args.gpu_id)
+    deblur = DEBLUR(args)
+    if args.phase == 'test':
+        deblur.test(args.height, args.width, args.input_path, args.output_path)
+    elif args.phase == 'train':
+        deblur.train()
+    else:
+        print('Phase should be set to either test or train')
+
+# DEBLUR Class (model.py)
+class DEBLUR:
+    def __init__(self, args):
+        set_model_parameters(n_levels, scale, channels, etc.)
+        set_training_parameters(batch_size, learning_rate, etc.)
+        prepare_training_data()
+
+    def input_producer(self, batch_size):
+        read_and_preprocess_images()
+        return batch_of_input_and_ground_truth_images
+
+    def generator(self, inputs, reuse=False):
+        if using_lstm:
+            initialize_conv_lstm_cell()
+        
+        for i in range(self.n_levels):
+            scale_inputs_and_previous_prediction()
+            # Encoder
+            conv1 = convolutional_block(inputs)
+            conv2 = convolutional_block(conv1, stride=2)
+            conv3 = convolutional_block(conv2, stride=2)
+            
+            if using_lstm:
+                conv3 = apply_conv_lstm(conv3)
+            
+            # Decoder
+            deconv3 = deconvolutional_block(conv3)
+            deconv2 = deconvolutional_block(concatenate(deconv3, conv2))
+            deconv1 = deconvolutional_block(concatenate(deconv2, conv1))
+            
+            output = final_convolution(deconv1)
+            predictions.append(output)
+        
+        return predictions
+
+    def build_model(self):
+        inputs, ground_truth = self.input_producer(self.batch_size)
+        predictions = self.generator(inputs)
+        calculate_multi_scale_loss(predictions, ground_truth)
+        setup_optimizer_and_training_ops()
+
+    def train(self):
+        initialize_tensorflow_session()
+        for step in range(max_steps):
+            run_training_operation()
+            if step % log_frequency == 0:
+                log_progress()
+            if step % save_frequency == 0:
+                save_model_checkpoint()
+
+    def test(self, height, width, input_path, output_path):
+        load_trained_model()
+        for each_input_image:
+            preprocess_image()
+            run_generator_to_get_deblurred_image()
+            save_output_image()
+
+# Utility Functions (util.py)
+def im2uint8(x):
+    clip_and_convert_to_uint8(x)
+
+def ResnetBlock(x, dim, ksize):
+    conv1 = slim.conv2d(x, dim, [ksize, ksize])
+    conv2 = slim.conv2d(conv1, dim, [ksize, ksize], activation_fn=None)
+    return x + conv2  # Residual connection
+
+# ConvLSTM Cell (BasicConvLSTMCell.py)
+class BasicConvLSTMCell:
+    def __init__(self, shape, filter_size, num_features):
+        set_cell_parameters()
+
+    def __call__(self, inputs, state):
+        c, h = split_state(state)
+        concatenated = concatenate(inputs, h)
+        i, j, f, o = split(convolution(concatenated))
+        new_c = c * sigmoid(f) + sigmoid(i) * tanh(j)
+        new_h = tanh(new_c) * sigmoid(o)
+        new_state = concatenate(new_c, new_h)
+        return new_h, new_state
+
+    def zero_state(self, batch_size, dtype):
+        return zeros(shape=[batch_size, height, width, features * 2])
+
+# Helper Functions
+def _conv_linear(args, filter_size, num_features, bias):
+    if len(args) == 1:
+        res = conv2d(args[0], num_features, filter_size)
+    else:
+        res = conv2d(concatenate(args), num_features, filter_size)
+    return res
+
+# Main Execution
+if __name__ == '__main__':
+    main()
