@@ -1,3 +1,10 @@
+# To get the folder in your device
+
+```
+git clone https://github.com/rps9161/code
+cd code
+```
+
 ## Prerequisites
 
 - Python2.7
